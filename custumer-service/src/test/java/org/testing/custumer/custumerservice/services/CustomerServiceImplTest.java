@@ -11,9 +11,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
+import org.testing.custumer.custumerservice.exception.EmailAlreadyExistException;
 import org.testing.custumer.custumerservice.mapper.CustomerMapper;
 import org.testing.custumer.custumerservice.repository.CustomerRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +33,7 @@ class CustomerServiceImplTest {
     private CustomerServiceImpl underTest;
 
     @Test
-    void shouldSaveNewCustomer(){
+    public void shouldSaveNewCustomer(){
 
         Customer customer = Customer.builder().firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
         CustomerDto customerDto = CustomerDto.builder().firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
@@ -45,6 +47,39 @@ class CustomerServiceImplTest {
 
         CustomerDto result = underTest.saveNewCustomer(customerDto);
 
+        assertThat(result).isNotNull();
+        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+
+    }
+
+    @Test
+    public void shouldNotSaveNewCustomerWhenEmailExist(){
+
+        Customer customer = Customer.builder().id(5L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto customerDto = CustomerDto.builder().firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findByEmail(customerDto.getEmail())).thenReturn(Optional.of(customer));
+        assertThatThrownBy(()->underTest.saveNewCustomer(customerDto)).isInstanceOf(EmailAlreadyExistException.class);
+    }
+
+    @Test
+    public void shouldGetAllCustomers(){
+
+        List<Customer> customers = List.of(
+                Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
+                Customer.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
+                Customer.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
+        );
+        List<CustomerDto> expected = List.of(
+                CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
+                CustomerDto.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
+                CustomerDto.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
+        );
+
+        Mockito.when(customerRepository.findAll()).thenReturn(customers);
+        Mockito.when(customerMapper.fromCustomers(customers)).thenReturn(expected);
+
+        List<CustomerDto> result = underTest.getAllCustomers();
         assertThat(result).isNotNull();
         assertThat(result).usingRecursiveComparison().isEqualTo(expected);
 
