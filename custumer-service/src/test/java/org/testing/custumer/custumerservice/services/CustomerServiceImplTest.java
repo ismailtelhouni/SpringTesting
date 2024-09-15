@@ -104,8 +104,6 @@ class CustomerServiceImplTest {
     public void shouldNotFindCustomerById(){
 
         Long customerId = 8L;
-        Customer customer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
-        CustomerDto customerDto = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
 
         Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
         assertThatThrownBy(()-> underTest.findCustomerById(customerId)).isInstanceOf(CustomerNotFoundException.class).hasMessage(null);
@@ -133,6 +131,40 @@ class CustomerServiceImplTest {
         List<CustomerDto> result = underTest.searchCustomers(keyword);
         assertThat(result).isNotNull();
         assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+
+    }
+
+    @Test
+    public void shouldUpdateCustomer(){
+        Long customerId = 6L;
+
+        Customer customerOld = Customer.builder().id(6L).firstName("isma").lastName("telhou").email("ismail@gmail.com").build();
+
+        CustomerDto customerDto = CustomerDto.builder().id(6L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        Customer customer = Customer.builder().id(6L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Customer updatedCustomer = Customer.builder().id(6L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto expected = CustomerDto.builder().id(6L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customerOld));
+        Mockito.when(customerMapper.fromCustomerDto(customerDto)).thenReturn(customer);
+        Mockito.when(customerRepository.save(customer)).thenReturn(updatedCustomer);
+        Mockito.when(customerMapper.fromCustomer(updatedCustomer)).thenReturn(expected);
+
+        CustomerDto result = underTest.updateCustomer(customerId, customerDto);
+        assertThat(result).isNotNull();
+        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+
+    }
+
+    @Test
+    public void shouldUpdateCustomerNotFoundCustomer(){
+
+        Long customerId = 8L;
+        CustomerDto customerDto = CustomerDto.builder().id(6L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+        assertThatThrownBy(()->underTest.updateCustomer(customerId , customerDto)).isInstanceOf(CustomerNotFoundException.class).hasMessage(null);
 
     }
 
