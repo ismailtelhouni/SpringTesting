@@ -168,6 +168,26 @@ class CustomerServiceImplTest {
 
     }
 
+    @Test
+    public void shouldDeleteCustomer(){
+
+        Long customerId = 1L;
+        Customer customer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        underTest.deleteCustomer(customerId);
+        Mockito.verify(customerRepository).deleteById(customerId);
+
+    }
+
+    @Test
+    public void shouldDeleteCustomerNotFoundCustomer(){
+        Long customerId = 8L;
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+        assertThatThrownBy(()->underTest.deleteCustomer(customerId )).isInstanceOf(CustomerNotFoundException.class).hasMessage(null);
+    }
+
 
 
 }
