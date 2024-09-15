@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
 import org.testing.custumer.custumerservice.exception.CustomerNotFoundException;
+import org.testing.custumer.custumerservice.exception.EmailAlreadyExistException;
 import org.testing.custumer.custumerservice.services.CustomerService;
 
 import java.util.List;
@@ -79,7 +81,7 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void searchCustomers() throws Exception {
+    public void shouldSearchCustomers() throws Exception {
 
         String keyword = "a";
         Mockito.when(customerService.searchCustomers(keyword)).thenReturn(customers);
@@ -89,5 +91,40 @@ class CustomerRestControllerTest {
             .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers)));
 
     }
+
+    @Test
+    public void shouldSaveCustomer() throws Exception {
+
+        CustomerDto customerDto= customers.getFirst();
+        String expected = """
+            {
+                "id":1, "firstName":"ismail", "lastName":"telhouni", "email":"ismail@gmail.com"
+            }
+            """;
+
+        Mockito.when(customerService.saveNewCustomer(Mockito.any())).thenReturn(customerDto);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/customers")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(customerDto))
+        )
+            .andExpect(MockMvcResultMatchers.status().isCreated())
+            .andExpect(MockMvcResultMatchers.content().json(expected));
+
+    }
+
+    @Test
+    public void shouldNotSaveCustomerWhenEmailExist() throws Exception {
+
+        CustomerDto customerDto= customers.getFirst();
+        Mockito.when(customerService.saveNewCustomer(Mockito.any())).thenThrow(EmailAlreadyExistException.class);
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/customers")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(customerDto))
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().string(""));
+
+    }
+
 
 }
