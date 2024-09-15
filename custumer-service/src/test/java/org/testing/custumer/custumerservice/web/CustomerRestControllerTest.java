@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
+import org.testing.custumer.custumerservice.exception.CustomerNotFoundException;
 import org.testing.custumer.custumerservice.services.CustomerService;
 
 import java.util.List;
@@ -52,6 +53,28 @@ class CustomerRestControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.size()", Matchers.is(3)))
             .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers)));
+
+    }
+
+    @Test
+    public void shouldGetCustomerById() throws Exception {
+
+        Long id = 1L;
+        Mockito.when(customerService.findCustomerById(id)).thenReturn(customers.getFirst());
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers.getFirst())));
+
+    }
+
+    @Test
+    public void shouldNotGetCustomerByInvalidId() throws Exception {
+
+        Long id = -1L;
+        Mockito.when(customerService.findCustomerById(id)).thenThrow(CustomerNotFoundException.class);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string(""));
 
     }
 
