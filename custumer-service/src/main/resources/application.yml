@@ -1,0 +1,21 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: customer-service
+  cloud:
+    config:
+      discovery:
+        enabled: false
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:customers-db
+  docker:
+    compose:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+eureka:
+  client:
+    enabled: false
