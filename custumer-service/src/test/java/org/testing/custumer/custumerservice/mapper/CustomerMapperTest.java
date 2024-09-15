@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class CustomerMapperTest {
@@ -17,20 +16,8 @@ class CustomerMapperTest {
     @Test
     public void shouldMapCustomerToCustomerDto() {
 
-        Customer givenCustomer = Customer.builder()
-                .id(1L)
-                .firstName("ismail")
-                .lastName("telhouni")
-                .email("ismail@gmail.com")
-                .build();
-
-        CustomerDto expected = CustomerDto.builder()
-                .id(1L)
-                .firstName("ismail")
-                .lastName("telhouni")
-                .email("ismail@gmail.com")
-                .build();
-
+        Customer givenCustomer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto expected = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
         CustomerDto result = underTest.fromCustomer(givenCustomer);
 
         assertThat(result).isNotNull();
@@ -41,20 +28,8 @@ class CustomerMapperTest {
     @Test
     public void shouldMapCustomerDtoToCustomer() {
 
-        Customer expected = Customer.builder()
-                .id(1L)
-                .firstName("ismail")
-                .lastName("telhouni")
-                .email("ismail@gmail.com")
-                .build();
-
-        CustomerDto givenCustomerDto = CustomerDto.builder()
-                .id(1L)
-                .firstName("ismail")
-                .lastName("telhouni")
-                .email("ismail@gmail.com")
-                .build();
-
+        Customer expected = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto givenCustomerDto = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
         Customer result = underTest.fromCustomerDto(givenCustomerDto);
 
         assertThat(result).isNotNull();
@@ -70,13 +45,11 @@ class CustomerMapperTest {
                 Customer.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
                 Customer.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
         );
-
         List<CustomerDto> expectedList = List.of(
                 CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
                 CustomerDto.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
                 CustomerDto.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
         );
-
         List<CustomerDto> result = underTest.fromCustomers(givenCustomers);
 
         assertThat(result).isNotNull();
@@ -86,23 +59,17 @@ class CustomerMapperTest {
 
     @Test
     public void shouldNotMapNullCustomerToCustomerDto() {
-
         assertThatThrownBy(()->underTest.fromCustomer(null)).isInstanceOf(IllegalArgumentException.class);
-
     }
 
     @Test
     public void shouldNotMapNullCustomerDtoToCustomer() {
-
         assertThatThrownBy(()->underTest.fromCustomerDto(null)).isInstanceOf(IllegalArgumentException.class);
-
     }
 
     @Test
     public void shouldNotMapNullListOfCustomersToListOfCustomersDto() {
-
         assertThatThrownBy(()->underTest.fromCustomers(null)).isInstanceOf(NullPointerException.class);
-
     }
 
 
