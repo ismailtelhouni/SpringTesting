@@ -19,8 +19,6 @@ import org.testing.custumer.custumerservice.repository.CustomerRepository;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceImplTest {
 
@@ -111,6 +109,30 @@ class CustomerServiceImplTest {
 
         Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
         assertThatThrownBy(()-> underTest.findCustomerById(customerId)).isInstanceOf(CustomerNotFoundException.class).hasMessage(null);
+
+    }
+
+    @Test
+    public void shouldSearchCustomers(){
+
+        String keyword = "a";
+        List<Customer> customers = List.of(
+                Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
+                Customer.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
+                Customer.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
+        );
+        List<CustomerDto> expected = List.of(
+                CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
+                CustomerDto.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
+                CustomerDto.builder().id(3L).firstName("Yassin").lastName("ech").email("yassin@gmail.com").build()
+        );
+
+        Mockito.when(customerRepository.findByFirstNameContainsIgnoreCase(keyword)).thenReturn(customers);
+        Mockito.when(customerMapper.fromCustomers(customers)).thenReturn(expected);
+
+        List<CustomerDto> result = underTest.searchCustomers(keyword);
+        assertThat(result).isNotNull();
+        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
 
     }
 
