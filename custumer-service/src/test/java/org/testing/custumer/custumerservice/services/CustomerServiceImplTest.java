@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
+import org.testing.custumer.custumerservice.exception.CustomerNotFoundException;
 import org.testing.custumer.custumerservice.exception.EmailAlreadyExistException;
 import org.testing.custumer.custumerservice.mapper.CustomerMapper;
 import org.testing.custumer.custumerservice.repository.CustomerRepository;
@@ -84,5 +85,35 @@ class CustomerServiceImplTest {
         assertThat(result).usingRecursiveComparison().isEqualTo(expected);
 
     }
+
+    @Test
+    public void shouldFindCustomerById(){
+
+        Long customerId = 1L;
+        Customer customer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto customerDto = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        Mockito.when(customerMapper.fromCustomer(customer)).thenReturn(customerDto);
+
+        CustomerDto result = underTest.findCustomerById(customerId);
+        assertThat(result).isNotNull();
+        assertThat(result).usingRecursiveComparison().isEqualTo(customerDto);
+
+    }
+
+    @Test
+    public void shouldNotFindCustomerById(){
+
+        Long customerId = 8L;
+        Customer customer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+        CustomerDto customerDto = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
+
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+        assertThatThrownBy(()-> underTest.findCustomerById(customerId)).isInstanceOf(CustomerNotFoundException.class).hasMessage(null);
+
+    }
+
+
 
 }
