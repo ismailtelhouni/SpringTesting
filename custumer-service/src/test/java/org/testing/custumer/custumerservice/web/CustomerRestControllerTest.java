@@ -62,8 +62,8 @@ class CustomerRestControllerTest {
         Long id = 1L;
         Mockito.when(customerService.findCustomerById(id)).thenReturn(customers.getFirst());
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers.getFirst())));
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers.getFirst())));
 
     }
 
@@ -73,8 +73,20 @@ class CustomerRestControllerTest {
         Long id = -1L;
         Mockito.when(customerService.findCustomerById(id)).thenThrow(CustomerNotFoundException.class);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.content().string(""));
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.content().string(""));
+
+    }
+
+    @Test
+    public void searchCustomers() throws Exception {
+
+        String keyword = "a";
+        Mockito.when(customerService.searchCustomers(keyword)).thenReturn(customers);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/search?keyword=" + keyword))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.size()", Matchers.is(3)))
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers)));
 
     }
 
