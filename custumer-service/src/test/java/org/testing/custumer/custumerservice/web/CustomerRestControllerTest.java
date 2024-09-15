@@ -14,14 +14,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
-import org.testing.custumer.custumerservice.entities.Customer;
 import org.testing.custumer.custumerservice.exception.CustomerNotFoundException;
 import org.testing.custumer.custumerservice.exception.EmailAlreadyExistException;
 import org.testing.custumer.custumerservice.services.CustomerService;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
 @WebMvcTest(CustomerRestController.class)
@@ -150,6 +147,25 @@ class CustomerRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(customerDto))
             )
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.content().string(""));
+    }
+
+    @Test
+    public void shouldDeleteCustomer() throws Exception {
+        Long id = 1L;
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/customers/{id}",id))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+    @Test
+    public void shouldDeleteCustomerWhenNotFoundCustomer() throws Exception {
+        Long id = 1L;
+
+        Mockito.doThrow(CustomerNotFoundException.class)
+            .when(customerService)
+            .deleteCustomer(id);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/customers/{id}",id))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
             .andExpect(MockMvcResultMatchers.content().string(""));
     }
