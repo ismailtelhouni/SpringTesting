@@ -126,5 +126,33 @@ class CustomerRestControllerTest {
 
     }
 
+    @Test
+    public void shouldUpdateCustomer() throws Exception {
+
+        Long id = 1L;
+        CustomerDto customerDto= customers.getFirst();
+
+        Mockito.when(customerService.updateCustomer(Mockito.eq(id),Mockito.any())).thenReturn(customerDto);
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/customers/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(customerDto))
+            )
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(customerDto)));
+    }
+
+    @Test
+    public void shouldUpdateCustomerWhenNotFoundCustomer() throws Exception {
+        Long id = 1L;
+        CustomerDto customerDto= customers.getFirst();
+        Mockito.when(customerService.updateCustomer(Mockito.eq(id),Mockito.any())).thenThrow(CustomerNotFoundException.class);
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/customers/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(customerDto))
+            )
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.content().string(""));
+    }
+
 
 }
