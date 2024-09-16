@@ -89,7 +89,7 @@ class CustomerIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(customerDto).isNotNull();
-        assertThat(customerDto).usingRecursiveComparison().isEqualTo(customers.getFirst());
+        assertThat(customerDto).usingRecursiveComparison().isEqualTo(customers.get(0));
 
     }
 
