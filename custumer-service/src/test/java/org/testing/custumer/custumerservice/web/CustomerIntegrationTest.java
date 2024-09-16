@@ -149,7 +149,7 @@ class CustomerIntegrationTest {
     @Rollback
     public void shouldUpdateValidCustomer() {
 
-        long id = 1L;
+        long id = 2L;
         CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
 
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , CustomerDto.class);
@@ -164,7 +164,7 @@ class CustomerIntegrationTest {
     @Test
     public void shouldNotUpdateInvalidCustomer() {
 
-        long id = 1L;
+        long id = 3L;
         CustomerDto customerDto = CustomerDto.builder().firstName("").lastName("").email("").build();
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , CustomerDto.class);
         CustomerDto cust = response.getBody();
@@ -201,6 +201,26 @@ class CustomerIntegrationTest {
 
     }
 
+    @Test
+    @Rollback
+    public void shouldDeleteCustomer(){
 
+        long id = 1L;
+        ResponseEntity<String> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.DELETE , null , String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+    }
+
+    @Test
+    public void shouldNotDeleteInvalidCustomer(){
+        long id = -1L;
+        ResponseEntity<ErrorMessage> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.DELETE , null , ErrorMessage.class);
+        ErrorMessage cust = response.getBody();
+
+        System.out.println("-------------------------------"+response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+
+    }
 
 }
