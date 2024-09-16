@@ -9,15 +9,12 @@ public class CustomerDto {
 
     private Long id;
 
-    @NotEmpty
-    @Size( min = 2 )
+    @NotEmpty @Size( min = 2 )
     private String firstName;
 
-    @NotEmpty
-    @Size( min = 2 )
+    @NotEmpty @Size( min = 2 )
     private String lastName;
 
-    @NotEmpty
-    @Size( min = 8 )
+    @NotEmpty @Size( min = 8 )
     private String email;
 }

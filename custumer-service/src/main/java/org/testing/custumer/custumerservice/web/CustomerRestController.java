@@ -36,7 +36,7 @@ public class CustomerRestController {
         return customerService.saveNewCustomer(customerDTO);
     }
     @PutMapping("/customers/{id}")
-    public CustomerDto updateCustomer(@PathVariable Long id,@RequestBody CustomerDto customerDTO){
+    public CustomerDto updateCustomer(@PathVariable Long id,@RequestBody @Valid CustomerDto customerDTO){
         return customerService.updateCustomer(id,customerDTO);
     }
     @DeleteMapping("/customers/{id}")
