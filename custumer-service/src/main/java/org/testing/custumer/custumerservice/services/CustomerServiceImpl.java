@@ -32,7 +32,7 @@ public class CustomerServiceImpl implements CustomerService {
         Optional<Customer> byEmail = customerRepository.findByEmail(customerDTO.getEmail());
         if(byEmail.isPresent()) {
             log.error(String.format("This email %s already exist", customerDTO.getEmail()));
-            throw new EmailAlreadyExistException();
+            throw new EmailAlreadyExistException("This email already exist");
         }
         Customer customerToSave = customerMapper.fromCustomerDto(customerDTO);
         Customer savedCustomer = customerRepository.save(customerToSave);
@@ -48,7 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto findCustomerById(Long id) throws CustomerNotFoundException {
         Optional<Customer> customer = customerRepository.findById(id);
-        if (customer.isEmpty()) throw new CustomerNotFoundException();
+        if (customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
         return customerMapper.fromCustomer(customer.get());
     }
 
@@ -61,7 +61,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto updateCustomer(Long id, CustomerDto customerDTO) throws CustomerNotFoundException {
         Optional<Customer> customer=customerRepository.findById(id);
-        if(customer.isEmpty()) throw new CustomerNotFoundException();
+        if(customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
         customerDTO.setId(id);
         Customer customerToUpdate = customerMapper.fromCustomerDto(customerDTO);
         Customer updatedCustomer = customerRepository.save(customerToUpdate);
@@ -71,7 +71,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(Long id) throws CustomerNotFoundException {
         Optional<Customer> customer=customerRepository.findById(id);
-        if(customer.isEmpty()) throw new CustomerNotFoundException();
+        if(customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
         customerRepository.deleteById(id);
     }
 }

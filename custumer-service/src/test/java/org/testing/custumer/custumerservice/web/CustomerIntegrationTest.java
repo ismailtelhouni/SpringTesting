@@ -3,6 +3,7 @@ package org.testing.custumer.custumerservice.web;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,18 +11,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testing.custumer.custumerservice.dto.CustomerDto;
+import org.testing.custumer.custumerservice.exception.ErrorMessage;
+import org.testing.custumer.custumerservice.repository.CustomerRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -38,6 +41,8 @@ class CustomerIntegrationTest {
     private static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:16");
 
     List<CustomerDto> customers;
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @BeforeEach
     public void setUp() {
@@ -96,4 +101,106 @@ class CustomerIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
     }
+
+    @Test
+    @Rollback
+    public void shouldSaveValidCustomer(){
+
+        CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
+        ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers", HttpMethod.POST , new HttpEntity<>(customerDto) , CustomerDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).usingRecursiveComparison().ignoringFields("id").isEqualTo(customerDto);
+
+    }
+
+    @Test
+    public void shouldNotSaveInvalidCustomer() throws JsonProcessingException {
+
+        CustomerDto customerDto = CustomerDto.builder().firstName("").lastName("").email("").build();
+        ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers", HttpMethod.POST , new HttpEntity<>(customerDto) , CustomerDto.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        System.out.println("response.getBody() ------------- ; "+response.getBody());
+        System.out.println("response.getBody() ------------- ; "+response.getStatusCode());
+
+        CustomerDto cust = response.getBody();
+        assertThat(cust).isNotNull();
+        assert cust != null;
+        boolean firstName = false;
+        if(cust.getFirstName().equals("size must be between 2 and 2147483647")) { firstName = true; }
+        else if (cust.getFirstName().equals("must not be empty")) { firstName = true; }
+        assertThat(firstName).isEqualTo(true);
+
+        boolean lastName = false;
+        if(cust.getLastName().equals("size must be between 2 and 2147483647")) { lastName = true; }
+        else if (cust.getLastName().equals("must not be empty")) { lastName = true; }
+        assertThat(lastName).isEqualTo(true);
+
+        boolean email = false;
+        if(cust.getEmail().equals("size must be between 8 and 2147483647")) { email = true; }
+        else if (cust.getEmail().equals("must not be empty")) { email = true; }
+        assertThat(email).isEqualTo(true);
+
+    }
+
+    @Test
+    @Rollback
+    public void shouldUpdateValidCustomer() {
+
+        long id = 1L;
+        CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
+
+        ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , CustomerDto.class);
+        CustomerDto cust = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(cust).isNotNull();
+        assertThat(cust).usingRecursiveComparison().ignoringFields("id").isEqualTo(customerDto);
+
+    }
+
+    @Test
+    public void shouldNotUpdateInvalidCustomer() {
+
+        long id = 1L;
+        CustomerDto customerDto = CustomerDto.builder().firstName("").lastName("").email("").build();
+        ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , CustomerDto.class);
+        CustomerDto cust = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(cust).isNotNull();
+        assert cust != null;
+
+        boolean firstName = false;
+        if(cust.getFirstName().equals("size must be between 2 and 2147483647")) { firstName = true; }
+        else if (cust.getFirstName().equals("must not be empty")) { firstName = true; }
+        assertThat(firstName).isEqualTo(true);
+
+        boolean lastName = false;
+        if(cust.getLastName().equals("size must be between 2 and 2147483647")) { lastName = true; }
+        else if (cust.getLastName().equals("must not be empty")) { lastName = true; }
+        assertThat(lastName).isEqualTo(true);
+
+        boolean email = false;
+        if(cust.getEmail().equals("size must be between 8 and 2147483647")) { email = true; }
+        else if (cust.getEmail().equals("must not be empty")) { email = true; }
+        assertThat(email).isEqualTo(true);
+
+    }
+
+    @Test
+    public void shouldNotUpdateCustomerNotFound(){
+        long id = -1L;
+        CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
+        ResponseEntity<ErrorMessage> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , ErrorMessage.class);
+        ErrorMessage cust = response.getBody();
+        System.out.println("-------------------------------"+response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+
+
 }
