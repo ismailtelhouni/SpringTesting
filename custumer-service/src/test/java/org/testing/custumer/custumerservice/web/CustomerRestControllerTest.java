@@ -36,7 +36,7 @@ class CustomerRestControllerTest {
     List<CustomerDto> customers;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         this.customers = List.of(
             CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
             CustomerDto.builder().id(2L).firstName("Mohamed").lastName("youssfi").email("mohamed@gmail.com").build(),
@@ -45,7 +45,7 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void shouldGetAllCustomers() throws Exception {
+    void shouldGetAllCustomers() throws Exception {
 
         Mockito.when(customerService.getAllCustomers()).thenReturn(customers);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers"))
@@ -56,29 +56,30 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void shouldGetCustomerById() throws Exception {
+    void shouldGetCustomerById() throws Exception {
 
         Long id = 1L;
-        Mockito.when(customerService.findCustomerById(id)).thenReturn(customers.getFirst());
+        Mockito.when(customerService.findCustomerById(id)).thenReturn(customers.get(0));
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers.getFirst())));
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(this.customers.get(0))));
 
     }
 
     @Test
-    public void shouldNotGetCustomerByInvalidId() throws Exception {
+    void shouldNotGetCustomerByInvalidId() throws Exception {
 
         Long id = -1L;
         Mockito.when(customerService.findCustomerById(id)).thenThrow(CustomerNotFoundException.class);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/customers/" + id))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.content().string(""));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(404))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
 
     }
 
     @Test
-    public void shouldSearchCustomers() throws Exception {
+    void shouldSearchCustomers() throws Exception {
 
         String keyword = "a";
         Mockito.when(customerService.searchCustomers(keyword)).thenReturn(customers);
@@ -90,9 +91,9 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void shouldSaveCustomer() throws Exception {
+    void shouldSaveCustomer() throws Exception {
 
-        CustomerDto customerDto= customers.getFirst();
+        CustomerDto customerDto= customers.get(0);
         String expected = """
             {
                 "id":1, "firstName":"ismail", "lastName":"telhouni", "email":"ismail@gmail.com"
@@ -110,24 +111,25 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void shouldNotSaveCustomerWhenEmailExist() throws Exception {
+    void shouldNotSaveCustomerWhenEmailExist() throws Exception {
 
-        CustomerDto customerDto= customers.getFirst();
+        CustomerDto customerDto= customers.get(0);
         Mockito.when(customerService.saveNewCustomer(Mockito.any())).thenThrow(EmailAlreadyExistException.class);
         mockMvc.perform(MockMvcRequestBuilders.post("/api/customers")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(customerDto))
                 )
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().string(""));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(400))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
 
     }
 
     @Test
-    public void shouldUpdateCustomer() throws Exception {
+    void shouldUpdateCustomer() throws Exception {
 
         Long id = 1L;
-        CustomerDto customerDto= customers.getFirst();
+        CustomerDto customerDto= customers.get(0);
 
         Mockito.when(customerService.updateCustomer(Mockito.eq(id),Mockito.any())).thenReturn(customerDto);
         mockMvc.perform(MockMvcRequestBuilders.put("/api/customers/{id}", id)
@@ -139,27 +141,28 @@ class CustomerRestControllerTest {
     }
 
     @Test
-    public void shouldUpdateCustomerWhenNotFoundCustomer() throws Exception {
+    void shouldUpdateCustomerWhenNotFoundCustomer() throws Exception {
         Long id = 1L;
-        CustomerDto customerDto= customers.getFirst();
+        CustomerDto customerDto= customers.get(0);
         Mockito.when(customerService.updateCustomer(Mockito.eq(id),Mockito.any())).thenThrow(CustomerNotFoundException.class);
         mockMvc.perform(MockMvcRequestBuilders.put("/api/customers/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(customerDto))
             )
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.content().string(""));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(404))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
     }
 
     @Test
-    public void shouldDeleteCustomer() throws Exception {
+    void shouldDeleteCustomer() throws Exception {
         Long id = 1L;
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/customers/{id}",id))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
     @Test
-    public void shouldDeleteCustomerWhenNotFoundCustomer() throws Exception {
+    void shouldDeleteCustomerWhenNotFoundCustomer() throws Exception {
         Long id = 1L;
 
         Mockito.doThrow(CustomerNotFoundException.class)
@@ -167,7 +170,8 @@ class CustomerRestControllerTest {
             .deleteCustomer(id);
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/customers/{id}",id))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.content().string(""));
+            .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(404))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
     }
 
 

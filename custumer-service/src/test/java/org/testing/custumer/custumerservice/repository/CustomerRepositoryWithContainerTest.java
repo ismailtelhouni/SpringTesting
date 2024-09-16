@@ -2,6 +2,7 @@ package org.testing.custumer.custumerservice.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ class CustomerRepositoryWithContainerTest {
     private CustomerRepository customerRepository;
 
     @Test
-    public void connectionEstablishedTest() {
+    void connectionEstablishedTest() {
         assertThat(postgreSQLContainer.isCreated()).isTrue();
         assertThat(postgreSQLContainer.isRunning()).isTrue();
     }
@@ -56,7 +57,7 @@ class CustomerRepositoryWithContainerTest {
     }
 
     @Test
-    public void shouldFindCustomerByEmail(){
+    void shouldFindCustomerByEmail(){
 
         String email = "ismail@gmail.com";
         Optional<Customer> result = customerRepository.findByEmail(email);
@@ -65,7 +66,7 @@ class CustomerRepositoryWithContainerTest {
     }
 
     @Test
-    public void shouldNotFindCustomerByEmail(){
+    void shouldNotFindCustomerByEmail(){
 
         String email = "test@gmail.com";
         Optional<Customer> result = customerRepository.findByEmail(email);
@@ -74,7 +75,7 @@ class CustomerRepositoryWithContainerTest {
     }
 
     @Test
-    public void shouldFindCustomerByFirstName(){
+    void shouldFindCustomerByFirstName(){
         String keyword = "a";
         List<Customer> expected = List.of(
                 Customer.builder().firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
@@ -84,7 +85,7 @@ class CustomerRepositoryWithContainerTest {
         List<Customer> customers =  customerRepository.findByFirstNameContainsIgnoreCase(keyword);
         System.out.println("customers :"+customers);
         assertThat(customers).isNotNull();
-        assertThat(customers.size()).isEqualTo(expected.size());
+        Assertions.assertThat(customers).hasSameSizeAs(expected);
         assertThat(customers).usingRecursiveComparison().ignoringFields("id").isEqualTo(expected);
 
     }

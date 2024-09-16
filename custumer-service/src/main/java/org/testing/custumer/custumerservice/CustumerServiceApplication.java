@@ -1,5 +1,7 @@
 package org.testing.custumer.custumerservice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +13,8 @@ import org.testing.custumer.custumerservice.repository.CustomerRepository;
 @SpringBootApplication
 public class CustumerServiceApplication {
 
+    private static final Logger logger = LoggerFactory.getLogger(CustumerServiceApplication.class);
+
     public static void main(String[] args) {
         SpringApplication.run(CustumerServiceApplication.class, args);
     }
@@ -19,7 +23,8 @@ public class CustumerServiceApplication {
     @Profile("!test")
     CommandLineRunner init(CustomerRepository customerRepository) {
         return args -> {
-            System.out.println("--------------------init-----------------------");
+            logger.info("Starting CustomerServiceApplication");
+            logger.info("--------------------init-----------------------");
             customerRepository.save(Customer.builder()
                 .firstName("ismail")
                 .lastName("telhouni")

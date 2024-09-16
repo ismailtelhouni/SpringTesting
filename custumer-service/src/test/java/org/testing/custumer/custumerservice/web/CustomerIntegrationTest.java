@@ -1,10 +1,8 @@
 package org.testing.custumer.custumerservice.web;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +31,6 @@ class CustomerIntegrationTest {
 
     @Autowired
     private TestRestTemplate testRestTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Container
     @ServiceConnection
@@ -54,34 +50,34 @@ class CustomerIntegrationTest {
     }
 
     @Test
-    public void shouldGetAllCustomers() {
+    void shouldGetAllCustomers() {
 
         ResponseEntity<CustomerDto[]> response = testRestTemplate.exchange("/api/customers" , HttpMethod.GET , null , CustomerDto[].class);
         List<CustomerDto> list = Arrays.asList(Objects.requireNonNull(response.getBody()));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(list.size()).isEqualTo(3);
+        Assertions.assertThat(list).hasSize(customers.size());
         assertThat(list).usingRecursiveComparison().isEqualTo(customers);
 
     }
 
     @Test
-    public void shouldSearchCustomersByFirstName() {
+    void shouldSearchCustomersByFirstName() {
 
         String keyword = "a";
         ResponseEntity<CustomerDto[]> response = testRestTemplate.exchange("/api/customers/search?keyword=" + keyword, HttpMethod.GET , null , CustomerDto[].class);
         List<CustomerDto> list = Arrays.asList(Objects.requireNonNull(response.getBody()));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(list.size()).isEqualTo(3);
         List<CustomerDto> expected = customers.stream().filter(c -> c.getFirstName().toLowerCase().contains(keyword.toLowerCase())).toList();
+        Assertions.assertThat(customers).hasSize(expected.size());
         assertThat(list).usingRecursiveComparison().isEqualTo(expected);
 
     }
 
 
     @Test
-    public void shouldGetCustomerById(){
+    void shouldGetCustomerById(){
 
         long id = 1L;
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/" + id, HttpMethod.GET , null , CustomerDto.class);
@@ -89,12 +85,12 @@ class CustomerIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(customerDto).isNotNull();
-        assertThat(customerDto).usingRecursiveComparison().isEqualTo(customers.getFirst());
+        assertThat(customerDto).usingRecursiveComparison().isEqualTo(customers.get(0));
 
     }
 
     @Test
-    public void shouldNotFoundCustomerById(){
+    void shouldNotFoundCustomerById(){
 
         long id = 8L;
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers/" + id, HttpMethod.GET , null , CustomerDto.class);
@@ -104,7 +100,7 @@ class CustomerIntegrationTest {
 
     @Test
     @Rollback
-    public void shouldSaveValidCustomer(){
+    void shouldSaveValidCustomer(){
 
         CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers", HttpMethod.POST , new HttpEntity<>(customerDto) , CustomerDto.class);
@@ -116,14 +112,11 @@ class CustomerIntegrationTest {
     }
 
     @Test
-    public void shouldNotSaveInvalidCustomer() throws JsonProcessingException {
+    void shouldNotSaveInvalidCustomer() {
 
         CustomerDto customerDto = CustomerDto.builder().firstName("").lastName("").email("").build();
         ResponseEntity<CustomerDto> response = testRestTemplate.exchange("/api/customers", HttpMethod.POST , new HttpEntity<>(customerDto) , CustomerDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-
-        System.out.println("response.getBody() ------------- ; "+response.getBody());
-        System.out.println("response.getBody() ------------- ; "+response.getStatusCode());
 
         CustomerDto cust = response.getBody();
         assertThat(cust).isNotNull();
@@ -131,23 +124,23 @@ class CustomerIntegrationTest {
         boolean firstName = false;
         if(cust.getFirstName().equals("size must be between 2 and 2147483647")) { firstName = true; }
         else if (cust.getFirstName().equals("must not be empty")) { firstName = true; }
-        assertThat(firstName).isEqualTo(true);
+        assertThat(firstName).isTrue();
 
         boolean lastName = false;
         if(cust.getLastName().equals("size must be between 2 and 2147483647")) { lastName = true; }
         else if (cust.getLastName().equals("must not be empty")) { lastName = true; }
-        assertThat(lastName).isEqualTo(true);
+        assertThat(lastName).isTrue();
 
         boolean email = false;
         if(cust.getEmail().equals("size must be between 8 and 2147483647")) { email = true; }
         else if (cust.getEmail().equals("must not be empty")) { email = true; }
-        assertThat(email).isEqualTo(true);
+        assertThat(email).isTrue();
 
     }
 
     @Test
     @Rollback
-    public void shouldUpdateValidCustomer() {
+    void shouldUpdateValidCustomer() {
 
         long id = 2L;
         CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
@@ -162,7 +155,7 @@ class CustomerIntegrationTest {
     }
 
     @Test
-    public void shouldNotUpdateInvalidCustomer() {
+    void shouldNotUpdateInvalidCustomer() {
 
         long id = 3L;
         CustomerDto customerDto = CustomerDto.builder().firstName("").lastName("").email("").build();
@@ -176,34 +169,33 @@ class CustomerIntegrationTest {
         boolean firstName = false;
         if(cust.getFirstName().equals("size must be between 2 and 2147483647")) { firstName = true; }
         else if (cust.getFirstName().equals("must not be empty")) { firstName = true; }
-        assertThat(firstName).isEqualTo(true);
+        assertThat(firstName).isTrue();
 
         boolean lastName = false;
         if(cust.getLastName().equals("size must be between 2 and 2147483647")) { lastName = true; }
         else if (cust.getLastName().equals("must not be empty")) { lastName = true; }
-        assertThat(lastName).isEqualTo(true);
+        assertThat(lastName).isTrue();
 
         boolean email = false;
         if(cust.getEmail().equals("size must be between 8 and 2147483647")) { email = true; }
         else if (cust.getEmail().equals("must not be empty")) { email = true; }
-        assertThat(email).isEqualTo(true);
+        assertThat(email).isTrue();
 
     }
 
     @Test
-    public void shouldNotUpdateCustomerNotFound(){
+    void shouldNotUpdateCustomerNotFound(){
         long id = -1L;
         CustomerDto customerDto = CustomerDto.builder().firstName("Amal").lastName("Salane").email("amal@gmail.com").build();
         ResponseEntity<ErrorMessage> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.PUT , new HttpEntity<>(customerDto) , ErrorMessage.class);
-        ErrorMessage cust = response.getBody();
-        System.out.println("-------------------------------"+response.getBody());
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
     }
 
     @Test
     @Rollback
-    public void shouldDeleteCustomer(){
+    void shouldDeleteCustomer(){
 
         long id = 1L;
         ResponseEntity<String> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.DELETE , null , String.class);
@@ -212,12 +204,10 @@ class CustomerIntegrationTest {
     }
 
     @Test
-    public void shouldNotDeleteInvalidCustomer(){
+    void shouldNotDeleteInvalidCustomer(){
         long id = -1L;
         ResponseEntity<ErrorMessage> response = testRestTemplate.exchange("/api/customers/"+id , HttpMethod.DELETE , null , ErrorMessage.class);
-        ErrorMessage cust = response.getBody();
 
-        System.out.println("-------------------------------"+response.getBody());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
 

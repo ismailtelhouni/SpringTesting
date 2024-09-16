@@ -6,7 +6,6 @@ import org.testing.custumer.custumerservice.dto.CustomerDto;
 import org.testing.custumer.custumerservice.entities.Customer;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerMapper {
@@ -22,7 +21,7 @@ public class CustomerMapper {
     }
 
     public List<CustomerDto> fromCustomers(List<Customer> customers) {
-        return customers.stream().map(c-> modelMapper.map(c,CustomerDto.class)).collect(Collectors.toList());
+        return customers.stream().map(c-> modelMapper.map(c,CustomerDto.class)).toList();
     }
 
 
