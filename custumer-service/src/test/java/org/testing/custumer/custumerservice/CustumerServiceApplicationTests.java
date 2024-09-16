@@ -10,6 +10,7 @@ class CustumerServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        CustumerServiceApplication.main(new String[] {});
     }
 
 }

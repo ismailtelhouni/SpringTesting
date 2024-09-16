@@ -20,6 +20,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerMapper customerMapper;
     private final CustomerRepository customerRepository;
+    private static final String CUSTOMER_NOT_FOUND = "Customer not found";
 
     public CustomerServiceImpl(CustomerMapper customerMapper, CustomerRepository customerRepository) {
         this.customerMapper = customerMapper;
@@ -40,6 +41,19 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public CustomerDto saveNewCustomer2(CustomerDto customerDTO) throws EmailAlreadyExistException {
+        log.info(String.format("Saving new Customer by different methode => %s ", customerDTO.toString()));
+        Optional<Customer> byEmail = customerRepository.findByEmail(customerDTO.getEmail());
+        if(byEmail.isPresent()) {
+            log.error(String.format("This email %s already exist .", customerDTO.getEmail()));
+            throw new EmailAlreadyExistException();
+        }
+        Customer customerToSave = customerMapper.fromCustomerDto(customerDTO);
+        Customer savedCustomer = customerRepository.save(customerToSave);
+        return customerMapper.fromCustomer(savedCustomer);
+    }
+
+    @Override
     public List<CustomerDto> getAllCustomers() {
         List<Customer> allCustomers = customerRepository.findAll();
         return customerMapper.fromCustomers(allCustomers);
@@ -48,7 +62,15 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto findCustomerById(Long id) throws CustomerNotFoundException {
         Optional<Customer> customer = customerRepository.findById(id);
-        if (customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
+        if (customer.isEmpty()) throw new CustomerNotFoundException(CUSTOMER_NOT_FOUND);
+        return customerMapper.fromCustomer(customer.get());
+    }
+
+    @Override
+    public CustomerDto findCustomerById2(Long id) throws CustomerNotFoundException {
+        log.info(String.format("Find customer by different methode => %s ", id));
+        Optional<Customer> customer = customerRepository.findById(id);
+        if (customer.isEmpty()) throw new CustomerNotFoundException();
         return customerMapper.fromCustomer(customer.get());
     }
 
@@ -61,7 +83,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto updateCustomer(Long id, CustomerDto customerDTO) throws CustomerNotFoundException {
         Optional<Customer> customer=customerRepository.findById(id);
-        if(customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
+        if(customer.isEmpty()) throw new CustomerNotFoundException(CUSTOMER_NOT_FOUND);
         customerDTO.setId(id);
         Customer customerToUpdate = customerMapper.fromCustomerDto(customerDTO);
         Customer updatedCustomer = customerRepository.save(customerToUpdate);
@@ -71,7 +93,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(Long id) throws CustomerNotFoundException {
         Optional<Customer> customer=customerRepository.findById(id);
-        if(customer.isEmpty()) throw new CustomerNotFoundException("Customer not found");
+        if(customer.isEmpty()) throw new CustomerNotFoundException(CUSTOMER_NOT_FOUND);
         customerRepository.deleteById(id);
     }
 }

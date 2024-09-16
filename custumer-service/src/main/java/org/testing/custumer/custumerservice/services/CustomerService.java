@@ -9,8 +9,10 @@ import java.util.List;
 public interface CustomerService {
 
     CustomerDto saveNewCustomer(CustomerDto customerDTO) throws EmailAlreadyExistException;
+    CustomerDto saveNewCustomer2(CustomerDto customerDTO) throws EmailAlreadyExistException;
     List<CustomerDto> getAllCustomers();
     CustomerDto findCustomerById(Long id) throws CustomerNotFoundException;
+    CustomerDto findCustomerById2(Long id) throws CustomerNotFoundException;
     List<CustomerDto> searchCustomers(String keyword);
     CustomerDto updateCustomer(Long id, CustomerDto customerDTO)throws CustomerNotFoundException;
     void deleteCustomer(Long id)throws CustomerNotFoundException;

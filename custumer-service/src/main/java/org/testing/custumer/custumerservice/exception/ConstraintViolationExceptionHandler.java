@@ -11,16 +11,6 @@ import java.util.*;
 
 @ControllerAdvice
 public class ConstraintViolationExceptionHandler {
-//    @ExceptionHandler(ConstraintViolationException.class)
-//    public ResponseEntity<Map<String, List<String>>> handleValidationErrors(ConstraintViolationException exception){
-//        Set<ConstraintViolation<?>> constraintViolations = exception.getConstraintViolations();
-//        Map<String, List<String>> listMap=new HashMap<>();
-//        constraintViolations.forEach(cv->{
-//            listMap.computeIfAbsent(cv.getPropertyPath().toString(), k -> new ArrayList<>());
-//            listMap.get(cv.getPropertyPath().toString()).add(cv.getMessage());
-//        });
-//        return ResponseEntity.badRequest().body(listMap);
-//    }
 
     @ExceptionHandler(value = { CustomerNotFoundException.class })
     public ResponseEntity<Object> entityNotFoundException( CustomerNotFoundException ex ) {
@@ -43,7 +33,7 @@ public class ConstraintViolationExceptionHandler {
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> HandlerMethodArgumentNotValid( MethodArgumentNotValidException ex ){
+    public ResponseEntity<Object> handlerMethodArgumentNotValid( MethodArgumentNotValidException ex ){
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach( error->
                 errors.put(error.getField(), error.getDefaultMessage())

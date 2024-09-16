@@ -14,7 +14,7 @@ class CustomerMapperTest {
     CustomerMapper underTest = new CustomerMapper();
 
     @Test
-    public void shouldMapCustomerToCustomerDto() {
+    void shouldMapCustomerToCustomerDto() {
 
         Customer givenCustomer = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
         CustomerDto expected = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
@@ -26,7 +26,7 @@ class CustomerMapperTest {
     }
 
     @Test
-    public void shouldMapCustomerDtoToCustomer() {
+    void shouldMapCustomerDtoToCustomer() {
 
         Customer expected = Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
         CustomerDto givenCustomerDto = CustomerDto.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build();
@@ -38,7 +38,7 @@ class CustomerMapperTest {
     }
 
     @Test
-    public void shouldMapListOfCustomersToListOfCustomersDto() {
+    void shouldMapListOfCustomersToListOfCustomersDto() {
 
         List<Customer> givenCustomers = List.of(
                 Customer.builder().id(1L).firstName("ismail").lastName("telhouni").email("ismail@gmail.com").build(),
@@ -58,20 +58,17 @@ class CustomerMapperTest {
     }
 
     @Test
-    public void shouldNotMapNullCustomerToCustomerDto() {
+    void shouldNotMapNullCustomerToCustomerDto() {
         assertThatThrownBy(()->underTest.fromCustomer(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void shouldNotMapNullCustomerDtoToCustomer() {
+    void shouldNotMapNullCustomerDtoToCustomer() {
         assertThatThrownBy(()->underTest.fromCustomerDto(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void shouldNotMapNullListOfCustomersToListOfCustomersDto() {
+    void shouldNotMapNullListOfCustomersToListOfCustomersDto() {
         assertThatThrownBy(()->underTest.fromCustomers(null)).isInstanceOf(NullPointerException.class);
     }
-
-
-
 }
